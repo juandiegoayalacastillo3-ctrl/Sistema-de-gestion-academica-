@@ -3,6 +3,9 @@
 
 export const environment = {
   production: false,
-  apiUrl: '',
-  useMockAuth: true,
+  apiUrl: 'http://localhost:3000/api',
+  supabaseUrl: 'https://bvdulgaleambumvlhkmg.supabase.co',
+  supabaseKey: 'sb_publishable_ZaXTyKCM1oKV9_oXtuFF_w_G1-eb4kn',
+  useSupabase: true,
+  useMockAuth: false,
 };

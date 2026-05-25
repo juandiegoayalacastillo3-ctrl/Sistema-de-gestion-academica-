@@ -3,7 +3,10 @@
 
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, delay, of, tap, throwError } from 'rxjs';
+import { Observable, delay, from, map, of, tap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Api } from './api';
+import { SupabaseService } from './supabase';
 
 export interface Usuario {
   // Esta interfaz define la forma que debe tener un usuario dentro de la app.
@@ -20,6 +23,11 @@ export interface RegisterRequest {
   email: string;
   password: string;
   rol: Usuario['rol'];
+}
+
+interface AuthResponse {
+  usuario: Usuario;
+  token: string;
 }
 
 // Base de datos local simulada.
@@ -52,7 +60,7 @@ export class AuthService {
   // Guarda el usuario que inicio sesion. Si es null, significa que no hay sesion activa.
   private usuarioActual: Usuario | null = null;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private api: Api, private supabase: SupabaseService) {
     // Al abrir o recargar la pagina, intentamos recuperar la sesion guardada.
     const guardado = localStorage.getItem('sge_usuario');
     if (guardado) {
@@ -61,6 +69,18 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<Usuario> {
+    if (environment.useSupabase) {
+      return from(this.loginSupabase(email, password));
+    }
+
+    if (!environment.useMockAuth) {
+      return this.api.post<AuthResponse>('auth/login', { email, password }).pipe(
+        tap(response => localStorage.setItem('sge_token', response.token)),
+        tap(response => this.guardarSesion(response.usuario)),
+        map(response => response.usuario),
+      );
+    }
+
     // Busca coincidencia por correo y contrasena en la lista local de usuarios.
     const encontrado = USUARIOS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
     if (!encontrado) {
@@ -78,6 +98,16 @@ export class AuthService {
   }
 
   register(data: RegisterRequest): Observable<Usuario> {
+    if (environment.useSupabase) {
+      return from(this.registerSupabase(data));
+    }
+
+    if (!environment.useMockAuth) {
+      return this.api.post<AuthResponse>('auth/register', data).pipe(
+        map(response => response.usuario),
+      );
+    }
+
     // Evita registrar dos usuarios con el mismo correo.
     const existe = USUARIOS.some(u => u.email.toLowerCase() === data.email.toLowerCase());
     if (existe) {
@@ -100,6 +130,10 @@ export class AuthService {
     // Cierra la sesion local y manda al usuario otra vez al login.
     this.usuarioActual = null;
     localStorage.removeItem('sge_usuario');
+    localStorage.removeItem('sge_token');
+    if (environment.useSupabase) {
+      this.supabase.client.auth.signOut();
+    }
     this.router.navigate(['/auth/login']);
   }
 
@@ -118,5 +152,65 @@ export class AuthService {
     // Toma las primeras letras del nombre para pintar el avatar del usuario.
     const partes = nombre.trim().split(/\s+/).slice(0, 2);
     return partes.map(parte => parte.charAt(0).toUpperCase()).join('');
+  }
+
+  private async loginSupabase(email: string, password: string): Promise<Usuario> {
+    const { data, error } = await this.supabase.client.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (error || !data.user) {
+      throw new Error('Credenciales invalidas');
+    }
+
+    const { data: perfil, error: perfilError } = await this.supabase.client
+      .from('perfiles')
+      .select('id, nombre, email, rol, iniciales')
+      .eq('auth_user_id', data.user.id)
+      .single();
+
+    if (perfilError || !perfil) {
+      throw new Error('No se encontro el perfil del usuario');
+    }
+
+    const usuario = perfil as Usuario;
+    this.guardarSesion(usuario);
+    return usuario;
+  }
+
+  private async registerSupabase(data: RegisterRequest): Promise<Usuario> {
+    const email = data.email.trim().toLowerCase();
+    const nombre = data.nombre.trim();
+    const { data: authData, error } = await this.supabase.client.auth.signUp({
+      email,
+      password: data.password,
+      options: {
+        data: { nombre, rol: data.rol },
+      },
+    });
+
+    if (error || !authData.user) {
+      throw new Error(error?.message || 'No se pudo crear la cuenta');
+    }
+
+    const usuario: Omit<Usuario, 'id'> = {
+      nombre,
+      email,
+      rol: data.rol,
+      iniciales: this.crearIniciales(nombre),
+    };
+
+    const { data: perfil } = await this.supabase.client
+      .from('perfiles')
+      .upsert({ ...usuario, auth_user_id: authData.user.id }, { onConflict: 'auth_user_id' })
+      .select('id, nombre, email, rol, iniciales')
+      .single();
+
+    if (!perfil) {
+      return { id: 0, ...usuario };
+    }
+
+    return perfil as Usuario;
   }
 }

@@ -3,6 +3,9 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Api } from './api';
+import { SupabaseService } from './supabase';
 
 export type Curso = '9A' | '9B' | '9C' | '10A';
 export type Materia = 'Matematicas' | 'Espanol' | 'Ciencias' | 'Historia' | 'Ingles';
@@ -76,9 +79,22 @@ export class AcademicoService {
   notas$ = this.notasSubject.asObservable();
   comunicados$ = this.comunicadosSubject.asObservable();
 
+  constructor(private api: Api, private supabase: SupabaseService) {
+    if (environment.useSupabase) {
+      this.cargarDatosSupabase();
+    } else if (!environment.useMockAuth) {
+      this.cargarDatosRemotos();
+    }
+  }
+
   moverEstudiante(id: number, curso: Curso): void {
     // map crea un nuevo arreglo y solo cambia el curso del estudiante encontrado.
     this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === id ? { ...e, curso } : e));
+    if (environment.useSupabase) {
+      void this.supabase.client.from('estudiantes').update({ curso }).eq('id', id);
+    } else if (!environment.useMockAuth) {
+      this.api.patch('academic/estudiantes/' + id + '/curso', { curso }).subscribe({ error: () => undefined });
+    }
   }
 
   agregarEstudiante(data: Omit<EstudianteAcademico, 'id' | 'presente' | 'justificado'>): EstudianteAcademico {
@@ -94,6 +110,20 @@ export class AcademicoService {
     this.estudiantesSubject.next([...this.estudiantesSubject.value, nuevo]);
     // Tambien se crean notas en cero para que aparezca en calificaciones.
     this.notasSubject.next([...this.notasSubject.value, ...this.crearNotasParaEstudiante(nuevo)]);
+    if (environment.useSupabase) {
+      this.agregarEstudianteSupabase(nuevo);
+    } else if (!environment.useMockAuth) {
+      this.api.post<EstudianteAcademico>('academic/estudiantes', nuevo).subscribe({
+        next: estudianteGuardado => {
+          this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === nuevo.id ? estudianteGuardado : e));
+          this.notasSubject.next([
+            ...this.notasSubject.value.filter(n => n.estudianteId !== nuevo.id),
+            ...this.crearNotasParaEstudiante(estudianteGuardado),
+          ]);
+        },
+        error: () => undefined,
+      });
+    }
     return nuevo;
   }
 
@@ -101,6 +131,11 @@ export class AcademicoService {
     // Se elimina al estudiante y tambien sus notas para no dejar datos huerfanos.
     this.estudiantesSubject.next(this.estudiantesSubject.value.filter(e => e.id !== id));
     this.notasSubject.next(this.notasSubject.value.filter(n => n.estudianteId !== id));
+    if (environment.useSupabase) {
+      void this.supabase.client.from('estudiantes').delete().eq('id', id);
+    } else if (!environment.useMockAuth) {
+      this.api.delete('academic/estudiantes/' + id).subscribe({ error: () => undefined });
+    }
   }
 
   actualizarNota(estudianteId: number, materia: Materia, periodo: Periodo, campo: 'nota1' | 'nota2' | 'nota3', valor: number): void {
@@ -111,16 +146,28 @@ export class AcademicoService {
         ? { ...n, [campo]: nota, ultimaModificacion: Date.now() }
         : n
     ));
+    if (environment.useSupabase) {
+      void this.supabase.client
+        .from('notas')
+        .update({ [campo]: nota, ultima_modificacion: Date.now() })
+        .eq('estudiante_id', estudianteId)
+        .eq('materia', materia)
+        .eq('periodo', periodo);
+    } else if (!environment.useMockAuth) {
+      this.api.patch('academic/notas', { estudianteId, materia, periodo, campo, valor: nota }).subscribe({ error: () => undefined });
+    }
   }
 
   setAsistencia(id: number, presente: boolean): void {
     // Cambia el estado de asistencia de un estudiante especifico.
     this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === id ? { ...e, presente } : e));
+    this.guardarAsistencia(id);
   }
 
   setJustificado(id: number, justificado: boolean): void {
     // Cambia el estado de justificacion de un estudiante ausente.
     this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === id ? { ...e, justificado } : e));
+    this.guardarAsistencia(id);
   }
 
   enviarComunicado(comunicado: Omit<Comunicado, 'id' | 'fecha'>): void {
@@ -131,6 +178,16 @@ export class AcademicoService {
       fecha: new Date().toISOString().split('T')[0],
     };
     this.comunicadosSubject.next([nuevo, ...this.comunicadosSubject.value]);
+    if (environment.useSupabase) {
+      void this.supabase.client.from('comunicados').insert(this.comunicadoToRow(nuevo));
+    } else if (!environment.useMockAuth) {
+      this.api.post<Comunicado>('academic/comunicados', nuevo).subscribe({
+        next: comunicadoGuardado => {
+          this.comunicadosSubject.next(this.comunicadosSubject.value.map(c => c.id === nuevo.id ? comunicadoGuardado : c));
+        },
+        error: () => undefined,
+      });
+    }
   }
 
   promedioEstudiante(id: number): number {
@@ -154,6 +211,155 @@ export class AcademicoService {
 
   notasPorEstudiante$(estudianteId: number) {
     return this.notas$.pipe(map(notas => notas.filter(n => n.estudianteId === estudianteId)));
+  }
+
+  private cargarDatosRemotos(): void {
+    this.api.get<EstudianteAcademico[]>('academic/estudiantes').subscribe({
+      next: estudiantes => this.estudiantesSubject.next(estudiantes.map(e => ({
+        ...e,
+        presente: Boolean(e.presente),
+        justificado: Boolean(e.justificado),
+      }))),
+      error: () => undefined,
+    });
+
+    this.api.get<Nota[]>('academic/notas').subscribe({
+      next: notas => this.notasSubject.next(notas),
+      error: () => undefined,
+    });
+
+    this.api.get<Comunicado[]>('academic/comunicados').subscribe({
+      next: comunicados => this.comunicadosSubject.next(comunicados),
+      error: () => undefined,
+    });
+  }
+
+  private async cargarDatosSupabase(): Promise<void> {
+    const { data: estudiantes } = await this.supabase.client
+      .from('estudiantes')
+      .select('id, nombre, curso, email, acudiente, acudiente_email, presente, justificado')
+      .order('nombre');
+
+    if (estudiantes) {
+      this.estudiantesSubject.next(estudiantes.map(row => this.estudianteFromRow(row)));
+    }
+
+    const { data: notas } = await this.supabase.client
+      .from('notas')
+      .select('estudiante_id, materia, periodo, nota1, nota2, nota3, ultima_modificacion');
+
+    if (notas) {
+      this.notasSubject.next(notas.map(row => this.notaFromRow(row)));
+    }
+
+    const { data: comunicados } = await this.supabase.client
+      .from('comunicados')
+      .select('id, titulo, mensaje, destinatario, fecha, tipo, autor')
+      .order('fecha', { ascending: false })
+      .order('id', { ascending: false });
+
+    if (comunicados) {
+      this.comunicadosSubject.next(comunicados as Comunicado[]);
+    }
+  }
+
+  private async agregarEstudianteSupabase(nuevo: EstudianteAcademico): Promise<void> {
+    const { data: estudianteGuardado } = await this.supabase.client
+      .from('estudiantes')
+      .insert(this.estudianteToRow(nuevo))
+      .select('id, nombre, curso, email, acudiente, acudiente_email, presente, justificado')
+      .single();
+
+    if (!estudianteGuardado) return;
+
+    const estudiante = this.estudianteFromRow(estudianteGuardado);
+    this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === nuevo.id ? estudiante : e));
+    const notas = this.crearNotasParaEstudiante(estudiante);
+    this.notasSubject.next([
+      ...this.notasSubject.value.filter(n => n.estudianteId !== nuevo.id),
+      ...notas,
+    ]);
+
+    await this.supabase.client.from('notas').insert(notas.map(nota => this.notaToRow(nota)));
+  }
+
+  private guardarAsistencia(id: number): void {
+    if (environment.useMockAuth) return;
+    const estudiante = this.estudiantesSubject.value.find(e => e.id === id);
+    if (!estudiante) return;
+
+    if (environment.useSupabase) {
+      void this.supabase.client.from('estudiantes').update({
+        presente: estudiante.presente,
+        justificado: estudiante.justificado,
+      }).eq('id', id);
+      return;
+    }
+
+    this.api.patch('academic/estudiantes/' + id + '/asistencia', {
+      presente: estudiante.presente,
+      justificado: estudiante.justificado,
+    }).subscribe({ error: () => undefined });
+  }
+
+  private estudianteFromRow(row: any): EstudianteAcademico {
+    return {
+      id: row.id,
+      nombre: row.nombre,
+      curso: row.curso,
+      email: row.email,
+      acudiente: row.acudiente,
+      acudienteEmail: row.acudiente_email,
+      presente: Boolean(row.presente),
+      justificado: Boolean(row.justificado),
+    };
+  }
+
+  private estudianteToRow(estudiante: EstudianteAcademico) {
+    return {
+      nombre: estudiante.nombre,
+      curso: estudiante.curso,
+      email: estudiante.email,
+      acudiente: estudiante.acudiente,
+      acudiente_email: estudiante.acudienteEmail,
+      presente: estudiante.presente,
+      justificado: estudiante.justificado,
+    };
+  }
+
+  private notaFromRow(row: any): Nota {
+    return {
+      estudianteId: row.estudiante_id,
+      materia: row.materia,
+      periodo: row.periodo,
+      nota1: Number(row.nota1),
+      nota2: Number(row.nota2),
+      nota3: Number(row.nota3),
+      ultimaModificacion: Number(row.ultima_modificacion),
+    };
+  }
+
+  private notaToRow(nota: Nota) {
+    return {
+      estudiante_id: nota.estudianteId,
+      materia: nota.materia,
+      periodo: nota.periodo,
+      nota1: nota.nota1,
+      nota2: nota.nota2,
+      nota3: nota.nota3,
+      ultima_modificacion: nota.ultimaModificacion,
+    };
+  }
+
+  private comunicadoToRow(comunicado: Comunicado) {
+    return {
+      titulo: comunicado.titulo,
+      mensaje: comunicado.mensaje,
+      destinatario: comunicado.destinatario,
+      fecha: comunicado.fecha,
+      tipo: comunicado.tipo,
+      autor: comunicado.autor,
+    };
   }
 
   private crearNotasIniciales(): Nota[] {

@@ -58,12 +58,22 @@ a { text-decoration: none; }
 .app-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* hosts de componentes dentro del router-outlet deben participar en el flex */
+app-dashboard, app-asistencia, app-calificaciones, app-comunicaciones, app-estudiantes {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .page-content {
   padding: 24px;
   max-width: 1440px;
   width: 100%;
+  flex: 1;
 }
 
 /* Sidebar */
