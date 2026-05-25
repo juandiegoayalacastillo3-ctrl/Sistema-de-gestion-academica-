@@ -272,13 +272,17 @@ a { text-decoration: none; }
   text-transform: capitalize;
 }
 
+app-footer {
+  margin-top: auto;
+  display: block;
+}
+
 .app-footer {
   background: var(--surface);
   border-top: 1px solid var(--line);
   color: var(--muted);
   padding: 10px 24px;
   font-size: 0.78rem;
-  margin-top: auto;
 }
 
 /* Login */
