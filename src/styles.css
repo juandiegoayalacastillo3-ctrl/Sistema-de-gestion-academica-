@@ -25,6 +25,7 @@ body {
   background: var(--page);
   color: var(--ink);
   font-family: "Segoe UI", Arial, sans-serif;
+  overflow-x: hidden;
 }
 
 a { text-decoration: none; }
@@ -550,6 +551,7 @@ a { text-decoration: none; }
 /* Tables and forms */
 .table {
   --bs-table-hover-bg: #fff7f7;
+  min-width: 760px;
 }
 
 .table th {
@@ -615,6 +617,52 @@ a { text-decoration: none; }
   .sidebar {
     width: 100%;
     min-height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 12px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  }
+
+  .sidebar-brand {
+    padding: 4px 4px 12px;
+  }
+
+  .sidebar-section {
+    display: none;
+  }
+
+  .sidebar .nav {
+    flex-direction: row !important;
+    gap: 8px !important;
+    overflow-x: auto;
+    padding: 6px 2px 2px;
+    scrollbar-width: thin;
+  }
+
+  .sidebar .nav-item {
+    flex: 0 0 auto;
+  }
+
+  .sidebar .nav-link {
+    white-space: nowrap;
+    padding: 9px 12px;
+  }
+
+  .sidebar-profile,
+  .sidebar-logout {
+    display: none;
+  }
+
+  .topbar {
+    position: static;
+    height: auto;
+    padding: 14px 18px;
+    gap: 12px;
+  }
+
+  .topbar-title {
+    font-size: 0.95rem;
   }
 
   .login-page {
@@ -629,24 +677,166 @@ a { text-decoration: none; }
   .login-card {
     margin: 24px 0;
   }
+
+  .page-content {
+    max-width: none;
+  }
+
+  .panel-header,
+  .card-body.d-flex {
+    align-items: stretch !important;
+  }
+
+  .card-body.d-flex {
+    flex-direction: column;
+  }
+
+  .card-body .ms-auto {
+    margin-left: 0 !important;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .table-responsive,
+  .card-body.p-0 {
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 640px) {
   .topbar {
-    height: auto;
     padding: 14px;
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .topbar-user {
+    min-width: 0;
   }
 
   .page-content {
-    padding: 14px;
+    padding: 12px;
   }
 
   .page-hero {
     flex-direction: column;
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .page-hero h1 {
+    font-size: 1.45rem;
+  }
+
+  .hero-status {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .stat-card {
+    min-height: 112px;
+    padding: 14px;
+  }
+
+  .stat-value {
+    font-size: 1.55rem;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px !important;
+  }
+
+  .quick-actions {
+    padding: 0 16px 16px;
   }
 
   .demo-users {
     grid-template-columns: 1fr;
+  }
+
+  .login-hero {
+    min-height: auto;
+    padding: 24px;
+    gap: 40px;
+  }
+
+  .login-brand {
+    align-items: flex-start;
+  }
+
+  .login-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 1.35rem;
+  }
+
+  .login-brand h1 {
+    font-size: 1rem;
+  }
+
+  .login-copy h2 {
+    font-size: 2rem;
+  }
+
+  .login-card {
+    width: calc(100% - 24px);
+    padding: 22px;
+    margin: 12px 0 24px;
+    max-height: none;
+  }
+
+  .sidebar {
+    border-radius: 0 0 18px 18px;
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .nav-icon {
+    display: none;
+  }
+
+  .sidebar .nav-link {
+    font-size: 0.86rem;
+    padding: 9px 11px;
+  }
+
+  .form-control,
+  .form-select,
+  .btn {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-title {
+    font-size: 0.95rem;
+  }
+
+  .topbar-kicker {
+    font-size: 0.66rem;
+  }
+
+  .topbar-title {
+    font-size: 0.88rem;
+  }
+
+  .page-content {
+    padding: 10px;
+  }
+
+  .card,
+  .panel-card,
+  .page-hero {
+    border-radius: 12px !important;
   }
 }
