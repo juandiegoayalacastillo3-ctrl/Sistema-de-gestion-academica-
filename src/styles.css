@@ -57,12 +57,15 @@ a { text-decoration: none; }
 .app-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .page-content {
   padding: 24px;
   max-width: 1440px;
   width: 100%;
+  flex: 1;
 }
 
 /* Sidebar */
