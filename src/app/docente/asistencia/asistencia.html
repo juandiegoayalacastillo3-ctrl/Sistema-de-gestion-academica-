@@ -44,7 +44,10 @@
             <td class="ps-3 fw-medium">{{ e.nombre }}</td>
             <td><span class="badge bg-light text-dark border">{{ e.curso }}</span></td>
             <td><span class="badge rounded-pill px-3" [ngClass]="e.presente ? 'badge-aprobado' : 'badge-reprobado'">{{ e.presente ? 'Presente' : 'Ausente' }}</span></td>
-            <td><span *ngIf="!e.presente && e.justificado" class="badge bg-warning text-dark rounded-pill px-3">Justificado</span><span *ngIf="e.presente || !e.justificado" class="text-muted small">-</span></td>
+            <td (click)="$event.stopPropagation()">
+              <button *ngIf="!e.presente" class="btn btn-sm rounded-pill px-3" [disabled]="!puedeEditar" [ngClass]="e.justificado ? 'btn-warning text-dark' : 'btn-outline-secondary'" (click)="toggleJustificado(e)">{{ e.justificado ? 'Justificado' : 'Justificar' }}</button>
+              <span *ngIf="e.presente" class="text-muted small">-</span>
+            </td>
             <td><button class="btn btn-sm" [disabled]="!puedeEditar" [ngClass]="e.presente ? 'btn-outline-danger' : 'btn-outline-success'" (click)="toggleAsistencia(e); $event.stopPropagation()">{{ e.presente ? 'Marcar ausente' : 'Marcar presente' }}</button></td>
           </tr>
         </tbody>

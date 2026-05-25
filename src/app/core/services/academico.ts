@@ -29,6 +29,7 @@ export interface Nota {
   nota1: number;
   nota2: number;
   nota3: number;
+  ultimaModificacion: number; // timestamp para ordenar por mas reciente en el dashboard.
 }
 
 export interface Comunicado {
@@ -107,7 +108,7 @@ export class AcademicoService {
     const nota = Math.max(0, Math.min(5, Number(valor) || 0));
     this.notasSubject.next(this.notasSubject.value.map(n =>
       n.estudianteId === estudianteId && n.materia === materia && n.periodo === periodo
-        ? { ...n, [campo]: nota }
+        ? { ...n, [campo]: nota, ultimaModificacion: Date.now() }
         : n
     ));
   }
@@ -115,6 +116,11 @@ export class AcademicoService {
   setAsistencia(id: number, presente: boolean): void {
     // Cambia el estado de asistencia de un estudiante especifico.
     this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === id ? { ...e, presente } : e));
+  }
+
+  setJustificado(id: number, justificado: boolean): void {
+    // Cambia el estado de justificacion de un estudiante ausente.
+    this.estudiantesSubject.next(this.estudiantesSubject.value.map(e => e.id === id ? { ...e, justificado } : e));
   }
 
   enviarComunicado(comunicado: Omit<Comunicado, 'id' | 'fecha'>): void {
@@ -163,6 +169,7 @@ export class AcademicoService {
             nota1: +Math.min(5, base).toFixed(1),
             nota2: +Math.min(5, base + 0.3).toFixed(1),
             nota3: +Math.min(5, base + 0.1).toFixed(1),
+            ultimaModificacion: 0,
           };
         })
       )
@@ -179,6 +186,7 @@ export class AcademicoService {
         nota1: 0,
         nota2: 0,
         nota3: 0,
+        ultimaModificacion: 0,
       }))
     );
   }

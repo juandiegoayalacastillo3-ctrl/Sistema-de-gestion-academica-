@@ -37,7 +37,7 @@ export class DashboardComponent {
         usuario,
         estudiantes: visibles,
         comunicados: comunicados.slice(0, 3),
-        notas: notasVisibles.slice(0, 6),
+        notas: [...notasVisibles].sort((a, b) => b.ultimaModificacion - a.ultimaModificacion || Number(b.periodo) - Number(a.periodo)).slice(0, 6),
         promedio,
         // Tarjetas resumen que se pintan en el dashboard.
         stats: [

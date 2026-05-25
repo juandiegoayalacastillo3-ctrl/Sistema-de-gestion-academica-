@@ -54,6 +54,12 @@ export class AsistenciaComponent {
     this.academico.setAsistencia(e.id, !e.presente);
   }
 
+  toggleJustificado(e: EstudianteAcademico): void {
+    // Solo se puede justificar si el estudiante esta ausente y el rol tiene permiso.
+    if (!this.puedeEditar || e.presente) return;
+    this.academico.setJustificado(e.id, !e.justificado);
+  }
+
   guardar(): void {
     // Como es local, el cambio ya queda aplicado; este mensaje solo confirma al usuario.
     this.guardado = true;
