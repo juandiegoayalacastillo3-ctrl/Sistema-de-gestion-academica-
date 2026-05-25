@@ -1,0 +1,77 @@
+<!-- Archivo: .\src\app\auth\register\register.html -->
+
+<div class="login-page">
+  <section class="login-hero">
+    <div class="login-brand">
+      <div class="login-logo">U</div>
+      <div>
+        <h1>Fundacion Universitaria Ucompensar</h1>
+        <p>Portal academico institucional</p>
+      </div>
+    </div>
+    <div class="login-copy">
+      <span class="login-badge">Registro local</span>
+      <h2>Creacion simple de cuentas para demostracion academica.</h2>
+      <p>El sistema funciona con datos locales para mantener la entrega estable y facil de presentar.</p>
+    </div>
+  </section>
+
+  <section class="login-card">
+    <div class="mb-4">
+      <div class="small text-uppercase fw-bold text-primary mb-2">Nueva cuenta</div>
+      <h2 class="h4 fw-bold text-dark mb-1">Crear usuario</h2>
+      <p class="text-muted small mb-0">Completa los datos basicos del usuario.</p>
+    </div>
+
+    <div *ngIf="exito" class="alert alert-success py-2 small text-center">
+      Cuenta creada. Redirigiendo al login...
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger py-2 small">{{ error }}</div>
+
+    <ng-container *ngIf="!exito">
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Nombre completo</label>
+        <input type="text" class="form-control" [(ngModel)]="nombre" placeholder="Tu nombre">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Correo electronico</label>
+        <input type="email" class="form-control" [(ngModel)]="email" placeholder="correo@ucompensar.edu.co">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Rol</label>
+        <select class="form-select" [(ngModel)]="rol">
+          <option value="docente">Docente</option>
+          <option value="directivo">Directivo</option>
+          <option value="padre">Padre / Acudiente</option>
+          <option value="estudiante">Estudiante</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Contrasena</label>
+        <input type="password" class="form-control" [(ngModel)]="password" placeholder="Minimo 6 caracteres">
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-semibold">Confirmar contrasena</label>
+        <input type="password" class="form-control" [(ngModel)]="password2" placeholder="Repite la contrasena"
+               [class.is-invalid]="password2 && !passwordsCoinciden"
+               [class.is-valid]="password2 && passwordsCoinciden">
+        <div class="invalid-feedback">Las contrasenas no coinciden.</div>
+      </div>
+
+      <button class="btn btn-primary w-100 fw-semibold" (click)="registrar()" [disabled]="cargando">
+        <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+        {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+
+      <p class="text-center small text-muted mt-3 mb-0">
+        Ya tienes cuenta?
+        <a routerLink="/auth/login" class="text-primary">Inicia sesion</a>
+      </p>
+    </ng-container>
+  </section>
+</div>

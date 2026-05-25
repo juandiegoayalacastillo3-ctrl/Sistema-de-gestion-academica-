@@ -1,0 +1,54 @@
+<!-- Comentario general: este archivo hace parte del sistema academico. Se comenta para que sea facil explicar su responsabilidad en la sustentacion. -->
+<!-- Archivo: .\src\app\docente\asistencia\asistencia.html -->
+
+<div class="page-content" *ngIf="estudiantes$ | async as estudiantes">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Registro de Asistencia</h2>
+      <p class="text-muted mb-0 text-capitalize">{{ fecha }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <select class="form-select" [(ngModel)]="cursoFiltro">
+        <option value="Todos">Todos</option>
+        <option *ngFor="let curso of academico.cursos" [value]="curso">{{ curso }}</option>
+      </select>
+      <button class="btn btn-primary" [disabled]="!puedeEditar" (click)="guardar()">Guardar</button>
+    </div>
+  </div>
+
+  <div *ngIf="guardado" class="alert alert-success">Asistencia guardada correctamente.</div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-4"><div class="card border-0 bg-success text-white text-center py-3"><div class="fs-2 fw-bold">{{ presentes(estudiantes) }}</div><div class="small">Presentes</div></div></div>
+    <div class="col-4"><div class="card border-0 bg-danger text-white text-center py-3"><div class="fs-2 fw-bold">{{ ausentes(estudiantes) }}</div><div class="small">Ausentes</div></div></div>
+    <div class="col-4"><div class="card border-0 bg-primary text-white text-center py-3"><div class="fs-2 fw-bold">{{ porcentaje(estudiantes) }}%</div><div class="small">Asistencia</div></div></div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 pt-3">
+      <h6 class="fw-bold mb-0">Lista de estudiantes</h6>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th class="ps-3">Estudiante</th>
+            <th>Curso</th>
+            <th>Estado</th>
+            <th>Justificado</th>
+            <th>Accion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of estudiantes" class="asistencia-row" (click)="toggleAsistencia(e)">
+            <td class="ps-3 fw-medium">{{ e.nombre }}</td>
+            <td><span class="badge bg-light text-dark border">{{ e.curso }}</span></td>
+            <td><span class="badge rounded-pill px-3" [ngClass]="e.presente ? 'badge-aprobado' : 'badge-reprobado'">{{ e.presente ? 'Presente' : 'Ausente' }}</span></td>
+            <td><span *ngIf="!e.presente && e.justificado" class="badge bg-warning text-dark rounded-pill px-3">Justificado</span><span *ngIf="e.presente || !e.justificado" class="text-muted small">-</span></td>
+            <td><button class="btn btn-sm" [disabled]="!puedeEditar" [ngClass]="e.presente ? 'btn-outline-danger' : 'btn-outline-success'" (click)="toggleAsistencia(e); $event.stopPropagation()">{{ e.presente ? 'Marcar ausente' : 'Marcar presente' }}</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

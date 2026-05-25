@@ -1,0 +1,15 @@
+<!-- Comentario general: este archivo hace parte del sistema academico. Se comenta para que sea facil explicar su responsabilidad en la sustentacion. -->
+<!-- Archivo: .\src\app\shared\components\base-card\base-card.html -->
+
+<div class="card shadow-sm mb-3">
+  <div class="card-header bg-dark text-white d-flex justify-content-between">
+    <strong>{{ titulo }}</strong>
+    <small class="text-muted">{{ ultimaActualizacion }}</small>
+  </div>
+  <div class="card-body">
+    <div *ngIf="cargando" class="text-center py-3">
+      <div class="spinner-border spinner-border-sm text-primary"></div>
+    </div>
+    <ng-content *ngIf="!cargando"></ng-content>
+  </div>
+</div>

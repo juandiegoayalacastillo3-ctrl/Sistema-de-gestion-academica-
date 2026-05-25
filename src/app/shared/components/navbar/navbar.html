@@ -1,0 +1,23 @@
+<!-- Comentario general: este archivo hace parte del sistema academico. Se comenta para que sea facil explicar su responsabilidad en la sustentacion. -->
+<!-- Archivo: .\src\app\shared\components\navbar\navbar.html -->
+
+<nav class="topbar">
+  <div>
+    <div class="topbar-kicker">Fundacion Universitaria Ucompensar</div>
+    <div class="topbar-title">Sistema Integral de Gestion Academica</div>
+  </div>
+
+  <div class="topbar-actions">
+    <span class="topbar-date d-none d-md-inline">{{ hoy }}</span>
+    <ng-container *ngIf="auth.getUsuario() as usuario">
+      <div class="topbar-user">
+        <div class="topbar-avatar">{{ usuario.iniciales }}</div>
+        <div class="d-none d-md-block">
+          <div class="topbar-name">{{ usuario.nombre }}</div>
+          <div class="topbar-role">{{ usuario.rol }}</div>
+        </div>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" (click)="logout()">Salir</button>
+    </ng-container>
+  </div>
+</nav>

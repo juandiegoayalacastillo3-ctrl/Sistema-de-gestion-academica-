@@ -1,0 +1,53 @@
+<!-- Archivo: .\src\app\auth\login\login.html -->
+
+<div class="login-page">
+  <section class="login-hero">
+    <div class="login-brand">
+      <div class="login-logo">U</div>
+      <div>
+        <h1>Fundacion Universitaria Ucompensar</h1>
+        <p>Portal academico institucional</p>
+      </div>
+    </div>
+    <div class="login-copy">
+      <span class="login-badge">Periodo academico 2026</span>
+      <h2>Gestion academica clara para directivos, docentes, estudiantes y acudientes.</h2>
+      <p>Consulta notas, asistencia, comunicados y administracion de estudiantes desde una experiencia sencilla y estable.</p>
+    </div>
+  </section>
+
+  <section class="login-card">
+    <div class="mb-4">
+      <div class="small text-uppercase fw-bold text-primary mb-2">Acceso al sistema</div>
+      <h2 class="h4 fw-bold text-dark mb-1">Iniciar sesion</h2>
+      <p class="text-muted small mb-0">Ingresa con un usuario de prueba o tus credenciales locales.</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger py-2 small">{{ error }}</div>
+
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">Correo electronico</label>
+      <input type="email" class="form-control form-control-lg" [(ngModel)]="email" placeholder="correo@ucompensar.edu.co">
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label small fw-semibold">Contrasena</label>
+      <input type="password" class="form-control form-control-lg" [(ngModel)]="password" placeholder="Minimo 6 caracteres"
+             (keyup.enter)="iniciarSesion()">
+    </div>
+
+    <button class="btn btn-primary btn-lg w-100 fw-semibold" (click)="iniciarSesion()" [disabled]="cargando">
+      <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+      {{ cargando ? 'Ingresando...' : 'Ingresar al portal' }}
+    </button>
+
+    <hr class="my-4">
+
+    <p class="small text-muted mb-2">Usuarios de demostracion</p>
+    <div class="demo-users">
+      <button *ngFor="let u of usuarios" class="btn btn-light btn-sm demo-user" (click)="llenar(u.email, u.pass)">
+        {{ u.rol }}
+      </button>
+    </div>
+  </section>
+</div>

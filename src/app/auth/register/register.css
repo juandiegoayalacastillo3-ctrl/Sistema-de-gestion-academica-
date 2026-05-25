@@ -1,0 +1,19 @@
+/* Archivo: .\src\app\auth\register\register.css */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  padding: 2rem 1rem;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+}

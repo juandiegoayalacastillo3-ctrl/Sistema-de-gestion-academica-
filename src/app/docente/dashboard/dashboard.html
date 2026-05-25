@@ -1,0 +1,95 @@
+<!-- Comentario general: este archivo hace parte del sistema academico. Se comenta para que sea facil explicar su responsabilidad en la sustentacion. -->
+<!-- Archivo: .\src\app\docente\dashboard\dashboard.html -->
+
+<div class="page-content" *ngIf="vm$ | async as vm">
+  <section class="page-hero">
+    <div>
+      <div class="eyebrow">Panel {{ vm.rol | titlecase }}</div>
+      <h1>Bienvenido, {{ vm.usuario?.nombre }}</h1>
+      <p>Resumen operacional del periodo academico 2026 para Fundacion Universitaria Ucompensar.</p>
+    </div>
+    <div class="hero-status">
+      <span>Estado del sistema</span>
+      <strong>Activo</strong>
+    </div>
+  </section>
+
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3" *ngFor="let s of vm.stats">
+      <div class="stat-card">
+        <div class="stat-label">{{ s.label }}</div>
+        <div class="stat-value">{{ s.value }}</div>
+        <div class="stat-sub">{{ s.sub }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2>Ultimas calificaciones</h2>
+            <p>Seguimiento academico por estudiante, materia y periodo.</p>
+          </div>
+          <a routerLink="/docente/calificaciones" class="btn btn-sm btn-primary">Ver modulo</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th class="ps-3">Estudiante</th>
+                <th>Materia</th>
+                <th>Periodo</th>
+                <th>Promedio</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let n of vm.notas">
+                <td class="ps-3 fw-semibold">{{ nombreEstudiante(n.estudianteId, vm.estudiantes) }}</td>
+                <td class="text-muted">{{ n.materia }}</td>
+                <td>{{ n.periodo }}</td>
+                <td><strong>{{ academico.promedioNota(n) }}</strong></td>
+                <td><span class="badge rounded-pill px-3" [ngClass]="getEstadoClass(estadoNota(n))">{{ estadoNota(n) }}</span></td>
+              </tr>
+              <tr *ngIf="vm.notas.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">No hay notas para mostrar.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="panel-card mb-3">
+        <div class="panel-header compact">
+          <div>
+            <h2>Accesos rapidos</h2>
+            <p>Operaciones frecuentes</p>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <a *ngIf="vm.rol === 'docente' || vm.rol === 'directivo'" routerLink="/docente/calificaciones">Ingresar calificaciones</a>
+          <a *ngIf="vm.rol === 'directivo'" routerLink="/docente/estudiantes">Gestionar estudiantes</a>
+          <a *ngIf="vm.rol === 'docente' || vm.rol === 'directivo'" routerLink="/docente/comunicados">Enviar comunicado</a>
+          <a *ngIf="vm.rol === 'estudiante' || vm.rol === 'padre'" routerLink="/docente/calificaciones">Consultar notas</a>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header compact">
+          <div>
+            <h2>Comunicados recientes</h2>
+            <p>Notificaciones institucionales</p>
+          </div>
+        </div>
+        <div *ngFor="let c of vm.comunicados" class="notice-item">
+          <div class="fw-semibold">{{ c.titulo }}</div>
+          <div class="small text-muted">{{ c.destinatario }} · {{ c.fecha }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

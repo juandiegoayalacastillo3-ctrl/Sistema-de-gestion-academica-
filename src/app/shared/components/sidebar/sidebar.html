@@ -1,0 +1,51 @@
+<!-- Comentario general: este archivo hace parte del sistema academico. Se comenta para que sea facil explicar su responsabilidad en la sustentacion. -->
+<!-- Archivo: .\src\app\shared\components\sidebar\sidebar.html -->
+
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-mark">U</div>
+    <div>
+      <div class="brand-title">Ucompensar</div>
+      <div class="brand-subtitle">Gestion Academica</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">Principal</div>
+  <ul class="nav nav-pills flex-column gap-1">
+    <li class="nav-item">
+      <a routerLink="/docente/dashboard" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">IN</span> Inicio
+      </a>
+    </li>
+    <li class="nav-item" *ngIf="auth.getRol() === 'docente' || auth.getRol() === 'directivo'">
+      <a routerLink="/docente/asistencia" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">AS</span> Asistencia
+      </a>
+    </li>
+    <li class="nav-item">
+      <a routerLink="/docente/calificaciones" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">CA</span> Calificaciones
+      </a>
+    </li>
+    <li class="nav-item" *ngIf="auth.getRol() === 'docente' || auth.getRol() === 'directivo'">
+      <a routerLink="/docente/estudiantes" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">ES</span> Estudiantes
+      </a>
+    </li>
+    <li class="nav-item">
+      <a routerLink="/docente/comunicados" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">CO</span> Comunicados
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-profile" *ngIf="auth.getUsuario() as usuario">
+    <div class="profile-avatar">{{ usuario.iniciales }}</div>
+    <div class="min-w-0">
+      <div class="profile-name">{{ usuario.nombre }}</div>
+      <div class="profile-role">{{ usuario.rol }}</div>
+    </div>
+  </div>
+
+  <button class="sidebar-logout" (click)="logout()">Cerrar sesion</button>
+</nav>
