@@ -620,12 +620,26 @@ a { text-decoration: none; }
     position: sticky;
     top: 0;
     z-index: 30;
-    padding: 12px;
+    padding: 8px 10px;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
   }
 
   .sidebar-brand {
-    padding: 4px 4px 12px;
+    padding: 0;
+    border-bottom: 0;
+    margin-bottom: 6px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  .brand-title {
+    font-size: 0.92rem;
+    line-height: 1;
   }
 
   .sidebar-section {
@@ -636,7 +650,8 @@ a { text-decoration: none; }
     flex-direction: row !important;
     gap: 8px !important;
     overflow-x: auto;
-    padding: 6px 2px 2px;
+    padding: 2px 0 0;
+    flex-wrap: nowrap;
     scrollbar-width: thin;
   }
 
@@ -646,7 +661,8 @@ a { text-decoration: none; }
 
   .sidebar .nav-link {
     white-space: nowrap;
-    padding: 9px 12px;
+    padding: 8px 11px;
+    font-size: 0.86rem;
   }
 
   .sidebar-profile,
@@ -794,7 +810,11 @@ a { text-decoration: none; }
   }
 
   .sidebar {
-    border-radius: 0 0 18px 18px;
+    border-radius: 0;
+  }
+
+  .sidebar-brand {
+    display: none;
   }
 
   .brand-subtitle {
@@ -806,8 +826,9 @@ a { text-decoration: none; }
   }
 
   .sidebar .nav-link {
-    font-size: 0.86rem;
-    padding: 9px 11px;
+    font-size: 0.82rem;
+    padding: 7px 10px;
+    border-radius: 999px;
   }
 
   .form-control,

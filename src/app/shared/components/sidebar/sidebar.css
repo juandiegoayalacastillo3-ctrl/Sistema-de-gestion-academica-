@@ -106,16 +106,35 @@
 @media (max-width: 980px) {
   :host {
     width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 40;
   }
 
   .sidebar {
     width: 100%;
     min-height: auto;
-    padding: 12px;
+    height: auto;
+    padding: 8px 10px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
   }
 
   .sidebar-brand {
-    padding: 4px 4px 12px;
+    padding: 0;
+    border-bottom: 0;
+    margin-bottom: 6px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  .brand-title {
+    font-size: 0.92rem;
+    line-height: 1;
   }
 
   .sidebar-section,
@@ -128,7 +147,13 @@
     flex-direction: row !important;
     gap: 8px !important;
     overflow-x: auto;
-    padding: 6px 2px 2px;
+    padding: 2px 0 0;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+
+  .sidebar .nav::-webkit-scrollbar {
+    display: none;
   }
 
   .sidebar .nav-item {
@@ -137,13 +162,18 @@
 
   .nav-link {
     white-space: nowrap;
-    padding: 9px 12px;
+    padding: 8px 11px;
+    font-size: 0.86rem;
   }
 }
 
 @media (max-width: 640px) {
   .sidebar {
-    border-radius: 0 0 18px 18px;
+    border-radius: 0;
+  }
+
+  .sidebar-brand {
+    display: none;
   }
 
   .brand-subtitle,
@@ -152,7 +182,8 @@
   }
 
   .nav-link {
-    font-size: 0.86rem;
-    padding: 9px 11px;
+    font-size: 0.82rem;
+    padding: 7px 10px;
+    border-radius: 999px;
   }
 }
